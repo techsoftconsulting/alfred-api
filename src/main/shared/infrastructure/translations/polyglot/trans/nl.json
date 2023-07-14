@@ -1,0 +1,76 @@
+{
+    "admin": {
+        "emails": {
+            "newResetPasswordRequest": {
+                "subject": "Aanvraag tot wachtwoordwijziging",
+                "content":
+                    "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een wachtwoordwijziging aangevraagd. Ga naar je dashboard om deze aanvraag goed te keuren."
+            },
+            "newOrderPlaced": {
+                "subject": "Nieuwe bestelling",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een nieuwe bestelling geplaatst. Ga naar je dashboard om deze bestelling verder op te volgen."
+            },
+            "orderDetailsUpdated": {
+                "subject": "Details van bestelling gewijzigd",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft bestelling <strong>%{orderReference}</strong> met ID <strong>#%{orderCode}</strong> gewijzigd. Ga naar je dashboard om deze bestelling verder op te volgen."
+            },
+            "newRealizationUploaded": {
+                "subject": "Nieuwe realisatie",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een nieuwe realisatie toegevoegd. Ga naar je dashboard om deze realisatie te bekijken."
+            }
+        },
+        "notifications": {
+            "newResetPasswordRequest": {
+                "title": "Aanvraag tot wachtwoordwijziging",
+                "content":
+                    "Beste %{adminName}, je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een wachtwoordwijziging aangevraagd. Ga naar je dashboard om deze aanvraag goed te keuren."
+            },
+            "newOrderPlaced": {
+                "subject": "Nieuwe bestelling",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een nieuwe bestelling geplaatst. Ga naar je dashboard om deze bestelling verder op te volgen."
+            },
+            "orderDetailsUpdated": {
+                "subject": "Details van bestelling gewijzigd",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft bestelling <strong>%{orderReference}</strong> met ID <strong>#%{orderCode}</strong> gewijzigd. Ga naar je dashboard om deze bestelling verder op te volgen."
+            },
+            "newRealizationUploaded": {
+                "subject": "Nieuwe realisatie",
+                "content": "Beste %{adminName}, <br><br> je dealer <strong>%{dealerName} #(%{dealerId})</strong> heeft een nieuwe realisatie toegevoegd. Ga naar je dashboard om deze realisatie te bekijken."
+            }
+        }
+    },
+    "users": {
+        "emails": {
+            "welcome": {
+                "subject": "Welkom als officiële StoreVan Vlaanderen dealer!",
+                "content": "Beste %{dealerName}, <br><br> Hieronder vind je de gegevens die je kan gebruiken om in te loggen in het dealerportaal: <br><br> <strong>E-mailadres:</strong> %{dealerEmail} <br><br> <strong>Dealer ID:</strong> %{dealerId} <br><br> <strong>Wachtwoord:</strong> %{plainPassword} <br><br> Zorg ervoor dat je jouw persoonlijke gegevens niet verliest. Schrijf ze op en bewaar ze op een veilige plaats.<br><br>Met vriendelijke groeten,<br>Het StoreVan Vlaanderen team"
+            },
+            "orderSent": {
+                "subject": "Je bestelling is onderweg",
+                "content": "Beste %{dealerName}, <br><br> Je bestelling <strong>%{orderReference} met ID #%{orderCode} is verzonden en wordt spoedig bij jou afgeleverd. <br><br> Met vriendelijke groeten,<br>Het StoreVan Vlaanderen team"
+            },
+            "orderMarkedAsIncomplete": {
+                "subject":
+                    "Je bestelling (%{orderReference}) is onvolledig",
+                "content": "Beste %{dealerName}, <br><br> We hebben meer informatie nodig bij je bestelling <strong>%{orderReference} met ID #%{orderCode}. <br> <p> Opmerkingen van de beheerder: %{comments} </p>. <br/> <p>Ga naar je dashboard om de ontbrekende informatie van deze bestelling verder aan te vullen.</p>"
+            },
+            "orderStatusChanged": {
+                "subject": "Status van bestelling gewijzigd",
+                "content": "Beste %{dealerName}, <br><br> De status van je bestelling <strong>%{orderReference} met ID #%{orderCode} is gewijzigd. <p> De huidige status is %{orderStatusName}</p>"
+            },
+             "resetPassword": {
+                "subject": "Stel je wachtwoord opnieuw in",
+                "content": "Hallo %{userName}, je URL voor het opnieuw instellen van je wachtwoord is <a href=%{link}>%{link}</a>"
+            }
+        }
+    },
+    "orders": {
+        "status": {
+            "processing": "Wordt verwerkt",
+            "scheduled": "Ingepland",
+            "inBackOrder": "In backorder",
+            "needMoreInfo": "Meer informatie nodig",
+            "sent": "Verzonden"
+        }
+    }
+}
