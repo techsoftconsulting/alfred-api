@@ -93,7 +93,7 @@ export default class AuthAdminInfrastructureCommandRepository
 
   async get(id: string) {
     return await this.repository().findOne({
-      where: { id: id },
+      where: { id: id, status: 'ACTIVE' },
     });
   }
 

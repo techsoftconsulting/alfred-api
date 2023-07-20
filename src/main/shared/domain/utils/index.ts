@@ -15,6 +15,7 @@ import {
   pick as fnPick,
   pickBy as fnPickBy,
   uniq as fnUniq,
+  uniqBy as LUniqBy,
   zipObject,
 } from 'lodash';
 import { AnyObject } from '../types';
@@ -42,11 +43,36 @@ export namespace ArrayUtils {
   export const map = fnMap;
   export const flatten = fnFlatten;
   export const findIndex = fnFindIndex;
+  export const uniqBy = LUniqBy;
 }
 
 export namespace DateTimeUtils {
   export const startOfWeek = (): Date => {
     return moment().startOf('week').toDate();
+  };
+
+  export const toTimezone = (date: Date, timezone: string) => {
+    const milis =
+      date.getTime() +
+      (moment().utcOffset() - moment().tz(timezone).utcOffset()) * 60000;
+    return new Date(milis);
+  };
+
+  export const fromString = (
+    date: string,
+    format: string | undefined = undefined,
+    utc = false,
+  ) => {
+    if (utc) return moment(date, format).utc().toDate();
+    return moment(date, format).toDate();
+  };
+
+  export const isPast = (date: Date) => {
+    return moment(date).isBefore(new Date());
+  };
+
+  export const differenceInHours = (a: Date, b: Date): number => {
+    return moment(a).diff(moment(b), 'hours');
   };
 
   export const endOfWeek = (): Date => {
@@ -74,6 +100,34 @@ export namespace DateTimeUtils {
 
   export const addDays = (a: Date, days: number) => {
     return moment(a).clone().add(days, 'days').toDate();
+  };
+
+  export const addHours = (a: Date, hours: number) => {
+    return moment(a).clone().add(hours, 'hours').toDate();
+  };
+
+  export const addMinutes = (a: Date, minutes: number) => {
+    return moment(a).clone().add(minutes, 'minutes').toDate();
+  };
+
+  export const fromTime = (
+    time: string,
+    format: string | undefined = 'HH:mm',
+  ) => {
+    return moment(time, format).toDate();
+  };
+
+  export const isBetween = (
+    date: Date,
+    limits: { start: Date; end: Date },
+    inclusivity = '[]',
+  ) => {
+    return moment(date).isBetween(
+      limits.start,
+      limits.end,
+      null, // can be year, month .... the granularity of your comaprison
+      inclusivity,
+    );
   };
 
   export const format = (date: Date, format: string) => {

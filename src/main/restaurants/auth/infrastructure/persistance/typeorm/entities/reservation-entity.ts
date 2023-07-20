@@ -21,6 +21,12 @@ export class ReservationEntity {
   restaurantId: string;
 
   @Column({
+    name: 'client_id',
+    nullable: true,
+  })
+  clientId?: string;
+
+  @Column({
     type: 'jsonb',
     nullable: true,
   })
@@ -61,6 +67,13 @@ export class ReservationEntity {
     default: false,
   })
   checkedIn?: boolean;
+
+  @Column({
+    name: 'cancelled',
+    type: 'boolean',
+    default: false,
+  })
+  cancelled?: boolean;
 
   @Column({
     name: 'checked_in_at',

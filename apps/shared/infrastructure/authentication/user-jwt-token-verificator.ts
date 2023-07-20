@@ -8,6 +8,9 @@ import AuthenticatedUser, {
 } from '../../dto/authenticated-user';
 import RestaurantAccountsRepository from '@restaurants/auth/domain/repositories/restaurant-accounts-repository';
 import VendorAccountsRepository from '../../../../src/main/vendor/auth/domain/repositories/vendor-accounts-repository';
+import CustomerAccountsRepository from '../../../../src/main/customer/auth/domain/repositories/customer-accounts-repository';
+import Criteria from '@shared/domain/criteria/criteria';
+import Filters from '@shared/domain/criteria/filters';
 
 export default class UserJWTVerificator
   extends JWTBaseVerificator
@@ -22,6 +25,8 @@ export default class UserJWTVerificator
     public vendorAccountRepository: VendorAccountsRepository,
     @inject('AuthAdminCommandRepository')
     public adminRepository: AuthAdminInfrastructureCommandRepository,
+    @inject('CustomerAccountsRepository')
+    public customerRepository: CustomerAccountsRepository,
   ) {
     super(jwtSecret);
   }
@@ -57,6 +62,42 @@ export default class UserJWTVerificator
               },
             }
           : null;
+      case 'RESTAURANT-HOST':
+        const hosts = await this.restaurantAccountRepository.findAll(
+          new Criteria({
+            order: undefined,
+            filters: Filters.fromArray([
+              {
+                field: 'id',
+                operator: '==',
+                value: params.id,
+              },
+              {
+                field: 'status',
+                operator: '==',
+                value: 'ACTIVE',
+              },
+              {
+                field: 'type',
+                operator: '==',
+                value: 'HOST',
+              },
+            ]),
+          }),
+        );
+
+        const host = hosts.length == 0 ? undefined : hosts[0];
+
+        return host
+          ? {
+              id: host.id,
+              email: host.email,
+              metadata: {
+                restaurantId: host.restaurantId,
+                type: host.type,
+              },
+            }
+          : null;
       case 'VENDOR':
         const vendor = await this.vendorAccountRepository.find(params.id);
 
@@ -70,7 +111,15 @@ export default class UserJWTVerificator
               },
             }
           : null;
+      case 'CUSTOMER':
+        const customer = await this.customerRepository.find(params.id);
 
+        return customer
+          ? {
+              id: customer.id,
+              email: customer.email,
+            }
+          : null;
       case 'ADMIN':
         const admin = await this.adminRepository.get(params.id);
 

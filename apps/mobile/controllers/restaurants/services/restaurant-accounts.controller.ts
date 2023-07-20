@@ -169,6 +169,12 @@ export class RestaurantAccountsController extends ApiController {
           )
         : undefined;
 
+      const exists = await this.repo.findByEmail((data as any).email);
+
+      if (exists && exists.id !== (data as any).id) {
+        throw new Error('USER_ALREADY_EXISTS');
+      }
+
       await this.repo.saveAccount({
         ...data,
         ...(hashedPassword ? { password: hashedPassword } : {}),

@@ -6,4 +6,8 @@ export default interface RestaurantAreaRepository {
   createArea(item: any): Promise<any>;
 
   deleteArea(id: string): Promise<any>;
+
+  findTable(restaurantId: string, id: string): Promise<any>;
+
+  findTables(restaurantId: string): Promise<any>;
 }

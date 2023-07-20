@@ -50,4 +50,28 @@ export default class RestaurantAreaInfrastructureCommandRepository
     });
     return area;
   }
+
+  async findTable(restaurantId: string, id: string): Promise<any> {
+    const tables = await this.findTables(restaurantId);
+    const table = tables.find((t) => t.id === id);
+
+    if (!table) return undefined;
+
+    return table;
+  }
+
+  async findTables(restaurantId: string): Promise<any> {
+    const repository = this.repository();
+    const areas = await repository.find({
+      where: {
+        restaurantId: restaurantId,
+      },
+    });
+
+    const tables = areas.flatMap((a) => {
+      return a.tables.map((t) => ({ ...t, areaId: a.id, areaName: a.name }));
+    });
+
+    return tables;
+  }
 }

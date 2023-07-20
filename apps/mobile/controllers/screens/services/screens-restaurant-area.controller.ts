@@ -18,8 +18,6 @@ import Filters from '@shared/domain/criteria/filters';
 import ScreensRestaurantAreaInfrastructureCommandRepository from '@screens/auth/infrastructure/persistance/typeorm/repositories/screens-restaurant-area-infrastructure-command-repository';
 import ListDto from '@apps/shared/dto/list-dto';
 
-class RestaurantAreaDto {}
-
 @ApiTags('Screens')
 @Controller({
   path: 'screens/restaurant-area',

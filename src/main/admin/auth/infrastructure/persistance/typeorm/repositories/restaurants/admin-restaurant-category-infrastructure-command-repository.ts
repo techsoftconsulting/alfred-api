@@ -15,7 +15,21 @@ export default class AdminRestaurantCategoryInfrastructureCommandRepository
 
   async save(category: any): Promise<void> {
     const repository = this.repository();
-    await repository.save(category);
+    const found = await repository.findOne({
+      where: {
+        id: category?.id,
+      },
+    });
+
+    if (!found) {
+      await repository.save(category);
+      return;
+    }
+
+    await repository.save({
+      ...category,
+      uuid: found.uuid,
+    });
   }
 
   async delete(id: string): Promise<void> {

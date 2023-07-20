@@ -31,6 +31,7 @@ import Collection from '@shared/domain/value-object/collection';
 import Order from '@shared/domain/criteria/order';
 import Filters from '@shared/domain/criteria/filters';
 import ListDto from '@apps/shared/dto/list-dto';
+import RestaurantInfrastructureCommandRepository from '@restaurants/auth/infrastructure/persistance/typeorm/repositories/restaurant-infrastructure-command-repository';
 
 class RestaurantReservationDto {}
 
@@ -48,6 +49,8 @@ export class RestaurantReservationController extends ApiController {
     queryBus: QueryBus,
     @inject('RestaurantReservationRepository')
     private repo: RestaurantReservationInfrastructureCommandRepository,
+    @inject('RestaurantRepository')
+    private baseRestaurantRepo: RestaurantInfrastructureCommandRepository,
     @inject('multipart.handler')
     multipartHandler: MultipartHandler<Request, Response>,
   ) {
@@ -189,6 +192,31 @@ export class RestaurantReservationController extends ApiController {
     try {
       await this.repo.deleteReservation(id);
       return { ok: true };
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('availability/:id/:date')
+  @ApiResponse({
+    status: 200,
+    description: 'Get',
+  })
+  @ApiOperation({
+    summary: 'Get',
+  })
+  async getAvailability(
+    @Param('id') id: string,
+    @Param('date') date: string,
+  ): Promise<any> {
+    try {
+      return await this.baseRestaurantRepo.getDayAvailability(id, date);
     } catch (error) {
       throw new HttpException(
         {

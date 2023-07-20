@@ -6,31 +6,32 @@ import { getManager } from 'typeorm';
 import { DateTimeUtils } from '@shared/domain/utils';
 
 export default class AdminStatsInfrastructureCommandRepository
-    extends TypeOrmRepository<ScreenEventsEntity>
-    implements AdminStatsRepository {
-    static readonly bindingKey = 'AdminStatsRepository';
+  extends TypeOrmRepository<ScreenEventsEntity>
+  implements AdminStatsRepository
+{
+  static readonly bindingKey = 'AdminStatsRepository';
 
-    getEntityClass(): any {
-        return ScreenEventsEntity;
-    }
+  getEntityClass(): any {
+    return ScreenEventsEntity;
+  }
 
-    async mostSearchedMalls(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async mostSearchedMalls(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const EVENT = 'USER_SEARCHED_RESTAURANT';
+    const EVENT = 'USER_SEARCHED_RESTAURANT';
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         data,
         COUNT(*) AS count
@@ -45,26 +46,26 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 
-    async mostSearchedRestaurants(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async mostSearchedRestaurants(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const EVENT = 'USER_SEARCHED_RESTAURANT';
+    const EVENT = 'USER_SEARCHED_RESTAURANT';
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         data,
         COUNT(*) AS count
@@ -79,26 +80,26 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 
-    async mostVisitedMalls(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async mostVisitedMalls(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const EVENT = 'USER_VISITED_RESTAURANT';
+    const EVENT = 'USER_VISITED_RESTAURANT';
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         data,
         COUNT(*) AS count
@@ -111,26 +112,26 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 
-    async mostVisitedPromotions(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async mostVisitedPromotions(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const EVENT = 'USER_VISITED_PROMOTION';
+    const EVENT = 'USER_VISITED_PROMOTION';
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         data,
         COUNT(*) AS count
@@ -145,26 +146,26 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 
-    async mostVisitedRestaurants(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async mostVisitedRestaurants(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const EVENT = 'USER_VISITED_RESTAURANT';
+    const EVENT = 'USER_VISITED_RESTAURANT';
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         data,
         COUNT(*) AS count
@@ -179,24 +180,24 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 
-    async restaurantWithMoreReservations(criteria?: Criteria): Promise<any[]> {
-        const entityManager = getManager();
+  async restaurantWithMoreReservations(criteria?: Criteria): Promise<any[]> {
+    const entityManager = getManager();
 
-        const finalFilters = criteria?.toPrimitives().filters;
+    const finalFilters = criteria?.toPrimitives().filters;
 
-        const FROM = finalFilters?.from
-            ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
-            : undefined;
-        const TO = finalFilters?.to
-            ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
-            : undefined;
+    const FROM = finalFilters?.from
+      ? DateTimeUtils.format(finalFilters.from, 'YYYY-MM-DD')
+      : undefined;
+    const TO = finalFilters?.to
+      ? DateTimeUtils.format(finalFilters.to, 'YYYY-MM-DD')
+      : undefined;
 
-        const LIMIT = 10;
+    const LIMIT = 10;
 
-        const result = await entityManager.query(`
+    const result = await entityManager.query(`
       SELECT
         restaurant_id as id,
         restaurant,
@@ -210,6 +211,6 @@ export default class AdminStatsInfrastructureCommandRepository
         count DESC
       LIMIT ${LIMIT}`);
 
-        return result;
-    }
+    return result;
+  }
 }

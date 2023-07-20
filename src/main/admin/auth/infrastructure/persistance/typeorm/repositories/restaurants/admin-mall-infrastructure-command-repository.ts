@@ -15,7 +15,21 @@ export default class AdminMallInfrastructureCommandRepository
 
   async save(item: any): Promise<void> {
     const repository = this.repository();
-    await repository.save(item);
+    const found = await repository.findOne({
+      where: {
+        id: item?.id,
+      },
+    });
+
+    if (!found) {
+      await repository.save(item);
+      return;
+    }
+
+    await repository.save({
+      ...item,
+      uuid: found.uuid,
+    });
   }
 
   async delete(id: string): Promise<void> {

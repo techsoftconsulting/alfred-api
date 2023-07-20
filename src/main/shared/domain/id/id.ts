@@ -1,4 +1,3 @@
-import fadmin from 'firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
 import ValueObject from '../value-object/value-object';
 
@@ -17,13 +16,6 @@ export default class Id extends ValueObject<IdProps> {
     }
   }
 
-  private gen() {
-    const id: string = fadmin.firestore().collection('test').doc().id;
-    return id;
-
-    return uuidv4();
-  }
-
   get value() {
     return this.props.value;
   }
@@ -34,5 +26,9 @@ export default class Id extends ValueObject<IdProps> {
 
   toString() {
     return this.value;
+  }
+
+  private gen() {
+    return uuidv4();
   }
 }

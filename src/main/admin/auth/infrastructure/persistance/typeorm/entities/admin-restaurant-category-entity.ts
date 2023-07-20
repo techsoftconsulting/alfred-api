@@ -1,13 +1,24 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import Id from '@shared/domain/id/id';
 
 @Entity({
   name: 'category',
 })
 export class AdminRestaurantCategoryEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn({
+    name: 'category_id',
+  })
+  uuid: string;
+
+  @PrimaryColumn({
+    default: new Id().value,
+  })
   id: string;
 
-  @Column()
+  @Column({
+    name: 'category_name',
+    default: '',
+  })
   name: string;
 
   @Column({

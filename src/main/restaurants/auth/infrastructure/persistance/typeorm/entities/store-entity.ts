@@ -1,14 +1,31 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import Id from '@shared/domain/id/id';
 
 @Entity({
   name: 'store',
 })
 export class StoreEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn({
+    name: 'store_id',
+  })
+  uuid: string;
+
+  @PrimaryColumn({
+    default: new Id().value,
+  })
   id: string;
 
-  @Column()
+  @Column({
+    name: 'store_name',
+    default: '',
+  })
   name: string;
+
+  @Column({
+    name: 'phrase',
+    default: '',
+  })
+  description: string;
 
   @Column({
     type: 'text',
@@ -17,11 +34,9 @@ export class StoreEntity {
   })
   categoriesIds: string[];
 
-  @Column()
-  description: string;
-
   @Column({
     name: 'logo_url',
+    nullable: true,
   })
   logoUrl?: string;
 

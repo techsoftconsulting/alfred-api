@@ -1,14 +1,30 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import Id from '@shared/domain/id/id';
 
 @Entity({
   name: 'mall',
 })
 export class MallEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn({
+    name: 'mall_id',
+  })
+  uuid: string;
+
+  @PrimaryColumn({
+    default: new Id().value,
+  })
   id: string;
 
-  @Column()
+  @Column({
+    name: 'mall_name',
+    default: '',
+  })
   name: string;
+
+  @Column({
+    default: '',
+  })
+  address: string;
 
   @Column()
   status: string;
