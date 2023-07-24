@@ -56,7 +56,7 @@ export default class RestaurantInfrastructureCommandRepository
 
     const updatedRestaurant = await repository.save({
       ...restaurant,
-      uuid: found.uuid,
+      // uuid: found.uuid,
     });
     return updatedRestaurant;
   }

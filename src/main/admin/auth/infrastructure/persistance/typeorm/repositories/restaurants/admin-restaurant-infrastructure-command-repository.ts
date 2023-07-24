@@ -28,7 +28,7 @@ export default class AdminRestaurantInfrastructureCommandRepository
 
     await repository.save({
       ...restaurant,
-      uuid: found.uuid,
+      // uuid: found.uuid,
     });
   }
 

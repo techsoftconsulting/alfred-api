@@ -1,17 +1,11 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
-import Id from '@shared/domain/id/id';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({
   name: 'store',
 })
 export class AdminStoreEntity {
-  @PrimaryGeneratedColumn({
-    name: 'store_id',
-  })
-  uuid: string;
-
   @PrimaryColumn({
-    default: new Id().value,
+    name: 'store_id',
   })
   id: string;
 
@@ -30,6 +24,7 @@ export class AdminStoreEntity {
   @Column({
     type: 'text',
     array: true,
+    default: [],
     name: 'categories_ids',
   })
   categoriesIds: string[];
@@ -42,31 +37,41 @@ export class AdminStoreEntity {
 
   @Column({
     name: 'cover_image_url',
+    nullable: true,
   })
   coverImageUrl?: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   slug: string;
 
   @Column({
     type: 'jsonb',
+    nullable: true,
   })
   schedule: any;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   address: string;
 
   @Column({
     name: 'contact_phone',
+    nullable: true,
   })
   contactPhone: string;
 
-  @Column()
+  @Column({
+    default: 'ACTIVE',
+  })
   status: string;
 
   @Column({
     type: 'timestamp',
     name: 'created_at',
+    default: new Date(),
   })
   createdAt: Date;
 

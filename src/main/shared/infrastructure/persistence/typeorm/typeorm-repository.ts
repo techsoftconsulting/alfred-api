@@ -24,11 +24,11 @@ export default abstract class TypeOrmRepository<T> {
       migrationsTableName: 'typeorm_migrations',
       logger: 'file',
       synchronize: false, // process.env.NODE_ENV === 'development',
-      extra: {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      },
+      /* extra: {
+                           ssl: {
+                             rejectUnauthorized: false,
+                           },
+                         },*/
     });
     x.initialize().then(() => {
       /*  console.log('db ready');*/

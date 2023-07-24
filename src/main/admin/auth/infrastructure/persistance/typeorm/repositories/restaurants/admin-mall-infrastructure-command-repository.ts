@@ -28,7 +28,7 @@ export default class AdminMallInfrastructureCommandRepository
 
     await repository.save({
       ...item,
-      uuid: found.uuid,
+      //uuid: found.uuid,
     });
   }
 

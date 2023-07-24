@@ -1,17 +1,11 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
-import Id from '@shared/domain/id/id';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({
   name: 'category',
 })
 export class AdminRestaurantCategoryEntity {
-  @PrimaryGeneratedColumn({
-    name: 'category_id',
-  })
-  uuid: string;
-
   @PrimaryColumn({
-    default: new Id().value,
+    name: 'category_id',
   })
   id: string;
 
@@ -26,7 +20,9 @@ export class AdminRestaurantCategoryEntity {
   })
   type: string;
 
-  @Column()
+  @Column({
+    default: 'ACTIVE',
+  })
   status: string;
 
   constructor(props: Partial<AdminRestaurantCategoryEntity>) {
