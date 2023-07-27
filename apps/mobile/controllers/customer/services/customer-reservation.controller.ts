@@ -1,4 +1,3 @@
-import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
 import {
   Body,
   Controller,
@@ -38,6 +37,12 @@ import Id from '@shared/domain/id/id';
 import SimpleCodeGenerator from '@shared/infrastructure/utils/simple-code-generator';
 import { DateTimeUtils, ObjectUtils } from '@shared/domain/utils';
 import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
+import EmailMessage from '@shared/domain/email/email-message';
+import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
+
+const QRCode = require('qrcode');
 
 class ReservationListDto {
   @ApiProperty({
@@ -207,6 +212,10 @@ export class RestaurantReservationController extends ApiController {
     multipartHandler: MultipartHandler<Request, Response>,
     @inject('simple.code.generator')
     private codeGenerator: SimpleCodeGenerator,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -342,6 +351,13 @@ export class RestaurantReservationController extends ApiController {
       });
 
       const entity = await this.repo.getReservation(id);
+
+      await sendReservation(
+        this.mailer,
+        this.emailContentParser,
+        { firstName: client.firstName, email: client.email },
+        { id: id },
+      );
       return entity;
     } catch (error) {
       console.log(error);
@@ -450,32 +466,6 @@ export class RestaurantReservationController extends ApiController {
     }
   }
 
-  /*
-                                              
-                                                @Delete(':id')
-                                                @ApiResponse({
-                                                  status: 200,
-                                                  description: 'delete',
-                                                })
-                                                @ApiOperation({
-                                                  summary: 'Eliminar reservacion',
-                                                })
-                                                async delete(@Param('id') id: string): Promise<any> {
-                                                  try {
-                                                    await this.repo.deleteReservation(id);
-                                                    return { ok: true };
-                                                  } catch (error) {
-                                                    throw new HttpException(
-                                                      {
-                                                        status: HttpStatus.INTERNAL_SERVER_ERROR,
-                                                        error: error.message,
-                                                      },
-                                                      HttpStatus.INTERNAL_SERVER_ERROR,
-                                                    );
-                                                  }
-                                                }
-                                              */
-
   private async findReservationInfo(
     clientId: string,
     reservation: CustomerReservationDto,
@@ -503,5 +493,70 @@ export class RestaurantReservationController extends ApiController {
       client,
       table,
     };
+  }
+}
+
+export async function sendReservation(
+  mailer,
+  emailContentParser,
+  user: { email: string; firstName: string },
+  reservation: { id: string },
+) {
+  const generateQR = async (text) => {
+    try {
+      return QRCode.toDataURL(text);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  try {
+    const image = await generateQR(JSON.stringify({ id: reservation.id }));
+
+    await mailer.send(
+      new EmailMessage({
+        to: {
+          email: user.email,
+          name: user.firstName,
+        },
+        subject: 'Tu reservación',
+        content: await emailContentParser.parseFromFile(
+          'general/reservation-email.ejs',
+          {
+            content: `<table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+
+        <tr>
+            <td bgcolor="#ffffff" style="padding: 40px 30px;">
+                <h1 style="color: #333333;">Confirmación de Reservación</h1>
+                <p style="color: #333333;">¡Hola ${user.firstName}!</p>
+                <p style="color: #333333;">Gracias por reservar con nosotros. Aquí está tu código QR de confirmación:</p>
+                <div style="text-align: center;">
+                    <!-- Aquí debes proporcionar la URL o el enlace de tu imagen del código QR -->
+                    <img src="cid:qr" alt="Código QR de la Reservación" width="200">
+                </div>
+                <p style="color: #333333;">Presenta este código QR al momento de tu llegada.</p>
+                <p style="color: #333333;">¡Esperamos verte pronto!</p>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#f0f0f0" style="padding: 30px; text-align: center;">
+                <p style="color: #666666; font-size: 12px;">Este correo electrónico es solo para fines de confirmación. Si tienes alguna pregunta o inquietud, por favor contáctanos.</p>
+                <p style="color: #666666; font-size: 12px;">&copy; 2023 Alfred. Todos los derechos reservados.</p>
+            </td>
+        </tr>
+    </table>`,
+          },
+        ),
+        attachments: [
+          {
+            filename: 'qr.png',
+            path: image,
+            cid: 'qr',
+          },
+        ],
+      }),
+    );
+  } catch (e) {
+    console.log(e);
   }
 }

@@ -46,6 +46,17 @@ export class VendorAccountEntity {
   })
   customPasswordConfigured: boolean;
 
+  @Column({
+    nullable: true,
+  })
+  passwordResetToken?: string;
+
+  @Column({
+    default: false,
+    name: 'principal',
+  })
+  principal: boolean;
+
   constructor(props: Partial<VendorAccountEntity>) {
     Object.assign(this, { ...props });
   }

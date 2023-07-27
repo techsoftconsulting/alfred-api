@@ -10,4 +10,6 @@ export default interface AuthAdminCommandRepository {
   updateUser(user: AdminAuthUser): Promise<void>;
 
   changePassword(user: AdminAuthUser): Promise<void>;
+
+  findByResetPasswordToken(token: string): Promise<AdminAuthUser | null>;
 }

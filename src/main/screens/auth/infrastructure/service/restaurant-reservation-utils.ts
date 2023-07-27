@@ -91,6 +91,7 @@ export default class RestaurantReservationUtils {
         duration: t.reservationDuration,
         tableId: t.id,
         areaName: t.areaName,
+        capacity: t.capacity,
         tableName: `Mesa ${t.number}`,
       };
     });
@@ -113,14 +114,13 @@ export default class RestaurantReservationUtils {
     ).filter((el) => {
       return isToday
         ? !DateTimeUtils.isPast(
-            DateTimeUtils.fromTime(DateTimeUtils.format(el, 'HH:mm')),
+            DateTimeUtils.fromTime(DateTimeUtils.format(el.start, 'HH:mm')),
           )
         : true;
     });
   }
 
   getNextHours(startHour, endHour, duration) {
-    const finalItems = [startHour];
     const finalReservDuration = duration.hours + duration.minutes / 60;
 
     const range = Math.floor(
@@ -128,64 +128,81 @@ export default class RestaurantReservationUtils {
         finalReservDuration,
     );
 
-    let currItem = startHour;
+    let currItem = {
+      start: startHour,
+      end: DateTimeUtils.addMinutes(
+        DateTimeUtils.addHours(
+          DateTimeUtils.fromTime(startHour),
+          duration.hours,
+        ),
+        duration.minutes,
+      ),
+    };
+
+    const finalItems = [currItem];
 
     for (let i = 0; i < range; i++) {
       const nextItem = DateTimeUtils.addMinutes(
         DateTimeUtils.addHours(
-          DateTimeUtils.fromTime(currItem),
+          DateTimeUtils.fromTime(currItem.end),
           duration.hours,
         ),
         duration.minutes,
       );
-      finalItems.push(nextItem);
 
-      currItem = nextItem;
+      const final = {
+        start: currItem.end,
+        end: nextItem,
+      };
+      finalItems.push(final);
+
+      currItem = final;
     }
 
     return finalItems;
   }
 
-  async getDayAvailability(id, date) {
-    const tables = await this.findRestaurantTables(id);
-    const dateName = DateTimeUtils.format(date, 'dddd').toUpperCase();
-    const dayAvailableTables = tables.filter(
-      (t) => !!t.schedule[dateName]?.active,
-    );
-
-    const isToday =
-      DateTimeUtils.format(date, 'YYYY-MM-DD') ==
-      DateTimeUtils.format(new Date(), 'YYYY-MM-DD');
-
-    const dayBusyTablesSlots = await this.findBusyTableRangeSlots(
-      id,
-      DateTimeUtils.format(date, 'YYYY-MM-DD'),
-    );
-
-    const dayAvailableHourRanges = this.getDayAvailableHourRanges(
-      dayAvailableTables,
-      dateName,
-    );
-
-    const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
-      const rangeSlots = this.getRangeSlots(isToday, current)
-        .map((z) => {
-          return DateTimeUtils.format(z, 'HH:mm');
-        })
-        .filter((s) => {
-          /*All tables are taken for that hour */
-          const isFull =
-            dayBusyTablesSlots.filter((bs) => bs.formattedHour === s).length ===
-            dayAvailableTables.length;
-
-          return !isFull;
-        });
-
-      return [...acc, ...rangeSlots];
-    }, []);
-
-    return finalSlots;
-  }
+  /*
+                              async getDayAvailability(id, date) {
+                                const tables = await this.findRestaurantTables(id);
+                                const dateName = DateTimeUtils.format(date, 'dddd').toUpperCase();
+                                const dayAvailableTables = tables.filter(
+                                  (t) => !!t.schedule[dateName]?.active,
+                                );
+                            
+                                const isToday =
+                                  DateTimeUtils.format(date, 'YYYY-MM-DD') ==
+                                  DateTimeUtils.format(new Date(), 'YYYY-MM-DD');
+                            
+                                const dayBusyTablesSlots = await this.findBusyTableRangeSlots(
+                                  id,
+                                  DateTimeUtils.format(date, 'YYYY-MM-DD'),
+                                );
+                            
+                                const dayAvailableHourRanges = this.getDayAvailableHourRanges(
+                                  dayAvailableTables,
+                                  dateName,
+                                );
+                            
+                                const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
+                                  const rangeSlots = this.getRangeSlots(isToday, current)
+                                    .map((z) => {
+                                      return DateTimeUtils.format(z, 'HH:mm');
+                                    })
+                                    .filter((s) => {
+                                      /!*All tables are taken for that hour *!/
+                                      const isFull =
+                                        dayBusyTablesSlots.filter((bs) => bs.formattedHour === s).length ===
+                                        dayAvailableTables.length;
+                            
+                                      return !isFull;
+                                    });
+                            
+                                  return [...acc, ...rangeSlots];
+                                }, []);
+                            
+                                return finalSlots;
+                              }*/
 
   async getDayAvailability2(id, date) {
     const tables = await this.findRestaurantTables(id);
@@ -213,12 +230,21 @@ export default class RestaurantReservationUtils {
     const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
       const rangeSlots = this.getRangeSlots(isToday, current)
         .map((z) => {
-          return DateTimeUtils.format(z, 'HH:mm');
+          return {
+            start: DateTimeUtils.format(z.start, 'HH:mm'),
+            end: DateTimeUtils.format(z.end, 'HH:mm'),
+          };
         })
         .filter((s) => {
-          const isFull = dayBusyTablesSlots.find(
-            (bs) => bs.formattedHour === s && bs.tableId === current.tableId,
-          );
+          const isFull = dayBusyTablesSlots.find((bs) => {
+            return (
+              bs.tableId === current.tableId &&
+              DateTimeUtils.fromTime(bs.formattedHour) >=
+                DateTimeUtils.fromTime(s.start) &&
+              DateTimeUtils.fromTime(bs.formattedHour) <=
+                DateTimeUtils.fromTime(s.end)
+            );
+          });
 
           return !isFull;
         });
@@ -229,6 +255,7 @@ export default class RestaurantReservationUtils {
           id: current.tableId,
           name: current.tableName,
           areaName: current.areaName,
+          capacity: current.capacity,
           availableSlots: rangeSlots,
         },
       };

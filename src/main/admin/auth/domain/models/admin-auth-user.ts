@@ -10,6 +10,7 @@ export interface AdminAuthUserProps {
   firstName?: string;
   lastName?: string;
   credentials: AdminAuthCredentialsProps;
+  passwordResetToken?: string;
   role: any;
 }
 
@@ -20,6 +21,7 @@ export interface AdminAuthUserPrimitiveProps {
   lastName?: string;
   password: string;
   plainPassword?: string;
+  passwordResetToken?: string;
   role: any;
 }
 
@@ -30,6 +32,10 @@ export default class AdminAuthUser extends AggregateRoot<AdminAuthUserProps> {
 
   get email() {
     return this.props.email;
+  }
+
+  get passwordResetToken() {
+    return this.props.passwordResetToken;
   }
 
   get role() {
@@ -71,7 +77,23 @@ export default class AdminAuthUser extends AggregateRoot<AdminAuthUserProps> {
       lastName: plainData.lastName,
       credentials: credentials,
       role: plainData.role,
+      passwordResetToken: plainData.passwordResetToken,
     });
+  }
+
+  requestResetPassword(code) {
+    this.props.passwordResetToken = code;
+
+    return this;
+  }
+
+  overridePassword(newPassword) {
+    this.props.passwordResetToken = null;
+    this.changePassword(newPassword);
+  }
+
+  verifyResetPasswordToken(token: string) {
+    return this.props.passwordResetToken === token;
   }
 
   public changePassword(newPassword: string) {

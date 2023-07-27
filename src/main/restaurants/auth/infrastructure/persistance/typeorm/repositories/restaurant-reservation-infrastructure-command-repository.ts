@@ -76,10 +76,6 @@ export default class RestaurantReservationInfrastructureCommandRepository
     }
   }
 
-  async findFreeTables(restaurantId: string, date: string, hour: string) {
-    return this.utils.findFreeTables(restaurantId, date, hour);
-  }
-
   private async guardValidReservation(reservation: any): Promise<boolean> {
     // Check if there is no reservation for the table at the given date and hour
     if (!reservation.date) {

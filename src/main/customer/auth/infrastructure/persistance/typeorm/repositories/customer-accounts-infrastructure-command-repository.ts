@@ -58,4 +58,13 @@ export default class CustomerAccountsInfrastructureCommandRepository
     const final = NestjsCriteriaConverter.convert(criteria);
     return this.repository().find(final);
   }
+
+  async findByResetPasswordToken(token: string): Promise<any> {
+    const entity = await this.repository().findOne({
+      where: {
+        passwordResetToken: token,
+      },
+    });
+    return entity || null;
+  }
 }

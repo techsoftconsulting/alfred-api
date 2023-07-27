@@ -46,6 +46,12 @@ export class AdminVendorManagerEntity {
   })
   customPasswordConfigured: boolean;
 
+  @Column({
+    default: false,
+    name: 'principal',
+  })
+  principal: boolean;
+
   constructor(props: Partial<AdminVendorManagerEntity>) {
     Object.assign(this, { ...props });
   }

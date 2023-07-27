@@ -46,6 +46,17 @@ export class RestaurantAccountEntity {
   })
   customPasswordConfigured: boolean;
 
+  @Column({
+    nullable: true,
+  })
+  passwordResetToken?: string;
+
+  @Column({
+    default: false,
+    name: 'principal',
+  })
+  principal: boolean;
+
   constructor(props: Partial<RestaurantAccountEntity>) {
     Object.assign(this, { ...props });
   }

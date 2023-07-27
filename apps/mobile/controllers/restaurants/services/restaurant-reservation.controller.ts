@@ -32,6 +32,9 @@ import Order from '@shared/domain/criteria/order';
 import Filters from '@shared/domain/criteria/filters';
 import ListDto from '@apps/shared/dto/list-dto';
 import RestaurantInfrastructureCommandRepository from '@restaurants/auth/infrastructure/persistance/typeorm/repositories/restaurant-infrastructure-command-repository';
+import { sendReservation } from '@apps/mobile/controllers/customer/services/customer-reservation.controller';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
 
 class RestaurantReservationDto {}
 
@@ -53,6 +56,10 @@ export class RestaurantReservationController extends ApiController {
     private baseRestaurantRepo: RestaurantInfrastructureCommandRepository,
     @inject('multipart.handler')
     multipartHandler: MultipartHandler<Request, Response>,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -143,6 +150,18 @@ export class RestaurantReservationController extends ApiController {
   async create(@Body() data: RestaurantReservationDto): Promise<any> {
     try {
       await this.repo.createReservation(data);
+
+      if ((data as any).client) {
+        await sendReservation(
+          this.mailer,
+          this.emailContentParser,
+          {
+            firstName: (data as any).client.firstName,
+            email: (data as any).client.email,
+          },
+          { id: (data as any).id },
+        );
+      }
 
       return { ok: true };
     } catch (error) {

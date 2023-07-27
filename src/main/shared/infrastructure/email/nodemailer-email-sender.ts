@@ -4,7 +4,7 @@ import { ObjectUtils } from '@shared/domain/utils';
 import { SentMessageInfo } from 'nodemailer';
 import EmailMessage from '../../domain/email/email-message';
 import EmailSender from '../../domain/email/email-sender';
-import Mail = require('nodemailer/lib/mailer');
+
 const nodemailer = require('nodemailer');
 
 @service()
@@ -20,38 +20,41 @@ export default class NodemailerEmailSender implements EmailSender {
         pass: this.configService.get('MAIL_PASSWORD'),
       },
       ...(process.env.MAIL_HOST &&
-        process.env.MAIL_HOST?.indexOf('mail.antagonist.nl') > -1 && {
-          secure: false,
-          tls: {
-            rejectUnauthorized: false,
-          },
-        }),
-
-      secure: true,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      /*
+      process.env.MAIL_HOST?.indexOf('mail.antagonist.nl') > -1
+        ? {
             secure: false,
-               tls: {
-                rejectUnauthorized: false,
-            }, 
-            */
-      /*   ...(!process.env.MAIL_SERVICE && {
-                host: process.env.MAIL_HOST,
-                port: process.env.MAIL_PORT,
-                secure: false,
-            }),
-            ...(process.env.MAIL_SERVICE && {
-                service: process.env.MAIL_SERVICE,
-            }),
-            auth: {
-                user: process.env.MAIL_USERNAME,
-                pass: process.env.MAIL_PASSWORD,
-            },
             tls: {
-                rejectUnauthorized: false,
-            }, */
+              rejectUnauthorized: false,
+            },
+          }
+        : {
+            secure: true,
+            tls: {
+              rejectUnauthorized: false,
+            },
+          }),
+
+      /*
+                              secure: false,
+                                 tls: {
+                                  rejectUnauthorized: false,
+                              },
+                              */
+      /*   ...(!process.env.MAIL_SERVICE && {
+                                  host: process.env.MAIL_HOST,
+                                  port: process.env.MAIL_PORT,
+                                  secure: false,
+                              }),
+                              ...(process.env.MAIL_SERVICE && {
+                                  service: process.env.MAIL_SERVICE,
+                              }),
+                              auth: {
+                                  user: process.env.MAIL_USERNAME,
+                                  pass: process.env.MAIL_PASSWORD,
+                              },
+                              tls: {
+                                  rejectUnauthorized: false,
+                              }, */
     };
 
     this.sender = nodemailer.createTransport(config);
@@ -65,10 +68,10 @@ export default class NodemailerEmailSender implements EmailSender {
     };
 
     /*  if (process.env.NODE_ENV === 'development') {
-      console.log('EMAILS ARE DISABLED IN NODEMAILER WHEN DEVELOPMENT');
-      return;
-    }
- */
+                  console.log('EMAILS ARE DISABLED IN NODEMAILER WHEN DEVELOPMENT');
+                  return;
+                }
+             */
     const emailData = {
       ...ObjectUtils.omit(content, [
         'toName',
@@ -90,6 +93,7 @@ export default class NodemailerEmailSender implements EmailSender {
       ),
       text: content.content,
       html: content.content,
+      attachments: content.attachments,
     };
 
     return this.sender.sendMail(emailData);

@@ -111,4 +111,18 @@ export default class AuthAdminInfrastructureCommandRepository
       });
     }
   }
+
+  async findByResetPasswordToken(token: string): Promise<AdminAuthUser | null> {
+    const result = await this.repository().findOne({
+      where: { passwordResetToken: token },
+    });
+
+    if (!result) return null;
+
+    const role = await this.roleFinder.get(result.roleId);
+
+    if (!role) throw new Error('admin_role_doesnt_exists');
+
+    return AdminAuthMapper.toDomain(result, role);
+  }
 }

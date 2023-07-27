@@ -19,6 +19,7 @@ export default class AdminAuthMapper {
         permission: role.permissions,
         status: role.status,
       },
+      passwordResetToken: plainValues.passwordResetToken,
     });
   }
 
@@ -32,6 +33,7 @@ export default class AdminAuthMapper {
       lastName: primitives.lastName,
       password: user.password,
       roleId: primitives.role.id,
+      passwordResetToken: primitives.passwordResetToken,
     });
   }
 }

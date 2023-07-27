@@ -37,8 +37,11 @@ import RestaurantInfrastructureCommandRepository from '@restaurants/auth/infrast
 import RestaurantAreaInfrastructureCommandRepository from '@restaurants/auth/infrastructure/persistance/typeorm/repositories/restaurant-area-infrastructure-command-repository';
 import SimpleCodeGenerator from '@shared/infrastructure/utils/simple-code-generator';
 import ListDto from '@apps/shared/dto/list-dto';
+import { sendReservation } from '@apps/mobile/controllers/customer/services/customer-reservation.controller';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
 
-class CustomerReservationDto {
+class HostReservationDto {
   @ApiProperty()
   restaurantId: string;
 
@@ -105,6 +108,10 @@ export class RestaurantHostReservationController extends ApiController {
     multipartHandler: MultipartHandler<Request, Response>,
     @inject('simple.code.generator')
     private codeGenerator: SimpleCodeGenerator,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -192,10 +199,22 @@ export class RestaurantHostReservationController extends ApiController {
   })
   async create(
     @User() user: AuthenticatedUser,
-    @Body() data: CustomerReservationDto,
+    @Body() data: HostReservationDto,
   ): Promise<any> {
     try {
       await this.repo.createReservation(data);
+
+      if ((data as any).client) {
+        await sendReservation(
+          this.mailer,
+          this.emailContentParser,
+          {
+            firstName: (data as any).client.firstName,
+            email: (data as any).client.email,
+          },
+          { id: (data as any).id },
+        );
+      }
 
       return { ok: true };
     } catch (error) {
@@ -218,7 +237,7 @@ export class RestaurantHostReservationController extends ApiController {
   })
   async update(
     @User() user: AuthenticatedUser,
-    @Body() data: CustomerReservationDto,
+    @Body() data: HostReservationDto,
     @Param('id') id: string,
   ): Promise<any> {
     try {

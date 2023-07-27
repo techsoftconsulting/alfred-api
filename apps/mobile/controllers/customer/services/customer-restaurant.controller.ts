@@ -4,8 +4,14 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import CommandBus from '@shared/domain/bus/command/command-bus';
 import QueryBus from '@shared/domain/bus/query/query-bus';
 import { inject } from '@shared/domain/decorators';
@@ -16,6 +22,7 @@ import RestaurantAreaInfrastructureCommandRepository from '@restaurants/auth/inf
 import Criteria from '@shared/domain/criteria/criteria';
 import Filters from '@shared/domain/criteria/filters';
 import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
 
 /*const RestaurantScheduleObject: SchemaObject = {
   type: "object",
@@ -96,6 +103,8 @@ const RestaurantObject: SchemaObject = {
 };
 
 @ApiTags('Customer')
+@ApiBearerAuth()
+@UseGuards(JwtUserGuard)
 @Controller({
   path: 'customer/restaurant',
 })
@@ -134,6 +143,127 @@ export class CustomerRestaurantController extends ApiController {
             areas: await this.getRestaurantAreas(restaurant.id),
           }
         : undefined;
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id/areas')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          tables: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                },
+                number: {
+                  type: 'number',
+                },
+                schedule: {
+                  type: 'object',
+                  properties: {},
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: 'Recupera las areas y mesas disponibles de un restaurante',
+  })
+  async areas(@Param('id') id: string): Promise<any> {
+    try {
+      return this.getRestaurantAreas(id);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':restaurantId/table/:id')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+        },
+        number: {
+          type: 'number',
+        },
+        schedule: {
+          type: 'object',
+          properties: {},
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: 'Recupera la informacion de una mesa de un restaurante',
+  })
+  async tableInfo(
+    @Param('restaurantId') restaurantId: string,
+    @Param('id') id: string,
+  ): Promise<any> {
+    try {
+      const areas = await this.getRestaurantAreas(restaurantId);
+      return areas.flatMap((a) => a.tables).find((t) => t.id === id);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('availability/:id/:date/:tableId')
+  @ApiResponse({
+    status: 200,
+    description: 'Get',
+  })
+  @ApiOperation({
+    summary: 'Get',
+  })
+  async getAvailability(
+    @Param('id') id: string,
+    @Param('tableId') tableId: string,
+    @Param('date') date: string,
+  ): Promise<any> {
+    try {
+      const ava = await this.repo.getDayAvailability(id, date);
+      console.log(ava);
+      return ava.find((a) => a.id === tableId);
     } catch (error) {
       throw new HttpException(
         {

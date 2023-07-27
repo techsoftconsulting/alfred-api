@@ -26,6 +26,11 @@ export class CustomerAccountEntity {
   @Column()
   password: string;
 
+  @Column({
+    nullable: true,
+  })
+  passwordResetToken?: string;
+
   constructor(props: Partial<CustomerAccountEntity>) {
     Object.assign(this, { ...props });
   }

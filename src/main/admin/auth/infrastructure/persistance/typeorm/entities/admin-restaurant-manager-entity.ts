@@ -46,6 +46,12 @@ export class AdminRestaurantManagerEntity {
   })
   customPasswordConfigured: boolean;
 
+  @Column({
+    default: false,
+    name: 'principal',
+  })
+  principal: boolean;
+
   constructor(props: Partial<AdminRestaurantManagerEntity>) {
     Object.assign(this, { ...props });
   }

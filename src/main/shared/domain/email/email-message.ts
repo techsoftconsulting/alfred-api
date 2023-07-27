@@ -11,7 +11,7 @@ export type EmailMessageProperties = {
   from?: EmailRecipient;
   to: EmailRecipient;
   content?: string;
-  attachments?: Array<string>;
+  attachments?: Array<any>;
   attributes?: AttributesMap;
   subject?: string;
   templateId?: string;

@@ -1,4 +1,3 @@
-import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
 import {
   Body,
   Controller,
@@ -9,11 +8,10 @@ import {
   Param,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiOperation,
+  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -31,39 +29,43 @@ import Order from '@shared/domain/criteria/order';
 import Filters from '@shared/domain/criteria/filters';
 import PasswordHasher from '@shared/domain/utils/password-hasher';
 import ListDto from '@apps/shared/dto/list-dto';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
+import AdminRestaurantInfrastructureCommandRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/restaurants/admin-restaurant-infrastructure-command-repository';
+import EmailMessage from '@shared/domain/email/email-message';
 
 class AdminRestaurantManagerDto {
-  /*  @ApiProperty()
-      id: string;
-    
-      @ApiProperty()
-      email: string;
-    
-      @ApiProperty()
-      firstName: string;
-    
-      @ApiProperty()
-      lastName: string;
-    
-      @ApiProperty()
-      restaurantId: string;
-    
-      @ApiProperty()
-      roles: string[];
-    
-      @ApiProperty()
-      status: string;
-    
-      @ApiProperty()
-      type: string;
-    
-      @ApiProperty()
-      password: string;*/
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty()
+  restaurantId: string;
+
+  @ApiProperty()
+  roles: string[];
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiProperty()
+  password: string;
 }
 
 @ApiTags('Admin')
-@ApiBearerAuth()
-@UseGuards(JwtUserGuard)
+/*@ApiBearerAuth()
+@UseGuards(JwtUserGuard)*/
 @Controller({
   path: 'admin/restaurant-manager',
 })
@@ -75,10 +77,16 @@ export class AdminRestaurantManagerController extends ApiController {
     queryBus: QueryBus,
     @inject('AdminRestaurantManagerRepository')
     private repo: AdminRestaurantManagerInfrastructureCommandRepository,
+    @inject('AdminRestaurantRepository')
+    private storeRepo: AdminRestaurantInfrastructureCommandRepository,
     @inject('multipart.handler')
     multipartHandler: MultipartHandler<Request, Response>,
     @inject('utils.passwordHasher')
     private passwordHasher: PasswordHasher,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -181,16 +189,64 @@ export class AdminRestaurantManagerController extends ApiController {
   })
   async save(@Body() data: AdminRestaurantManagerDto): Promise<any> {
     try {
+      const exists = await this.repo.find(data.id);
       const hashedPassword = (data as any).credentials
         ? await this.passwordHasher.hashPassword(
             (data as any).credentials.password,
           )
         : undefined;
 
+      const managerData: any = data;
+      if (!managerData.restaurantId) return;
+
+      const criteria = new Criteria({
+        order: new Collection([]),
+        filters: Filters.fromArray([
+          /* {
+                                                                                                                                                                                             field: 'status',
+                                                                                                                                                                                             operator: '==',
+                                                                                                                                                                                             value: 'ACTIVE',
+                                                                                                                                                                                           },*/
+          {
+            field: 'roles',
+            operator: 'array-contains',
+            value: 'USER',
+          },
+          {
+            field: 'restaurantId',
+            operator: '==',
+            value: managerData.restaurantId,
+          },
+          {
+            field: 'principal',
+            operator: '==',
+            value: true,
+          },
+        ]),
+      });
+
+      const principalsUsers = await this.repo.findAll(criteria);
+
+      const isPrincipal = !!principalsUsers.find((u) => u.id == managerData.id)
+        ? true
+        : principalsUsers.length == 0;
+
       await this.repo.save({
         ...data,
         ...(hashedPassword ? { password: hashedPassword } : {}),
+        principal: isPrincipal,
       });
+
+      if (!exists && (data as any).credentials) {
+        try {
+          await this.sendWelcomeEmail(
+            { ...data, password: (data as any).credentials.password },
+            data.restaurantId,
+          );
+        } catch (e) {
+          console.log(e);
+        }
+      }
 
       return { ok: true };
     } catch (error) {
@@ -225,5 +281,49 @@ export class AdminRestaurantManagerController extends ApiController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private async sendWelcomeEmail(user, storeId) {
+    const store = await this.storeRepo.find(storeId);
+
+    if (!store) return;
+
+    const link =
+      store.type === 'RESTAURANT'
+        ? `${process.env.RESTAURANT_PANEL_URL}/login?id=${store.slug}`
+        : `${process.env.VENDOR_PANEL_URL}/login?id=${store.slug}`;
+
+    await this.mailer.send(
+      new EmailMessage({
+        to: {
+          email: user.email,
+          name: user.firstName,
+        },
+        subject: 'Alfred - Bienvenido',
+        content: await this.emailContentParser.parseFromFile(
+          'general/store-welcome-email.ejs',
+          {
+            content: `<table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+
+        <tr>
+            <td bgcolor="#ffffff" style="padding: 40px 30px;">
+                <h1 style="color: #333333;">Confirmación de Registro</h1>
+                <p style="color: #333333;">¡Hola ${user.firstName}!</p>
+                <p style="color: #333333;">Para ingresar al panel:  <a href="${link}" >Haz click aquí</a></p>
+                <p style="color: #333333;">Email: ${user.email}, password: ${user.password}</p>
+                <p style="color: #333333;">Podrás cambiar tu clave al iniciar sesión</p>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#f0f0f0" style="padding: 30px; text-align: center;">
+                <p style="color: #666666; font-size: 12px;">Este correo electrónico es solo para fines de confirmación. Si tienes alguna pregunta o inquietud, por favor contáctanos.</p>
+                <p style="color: #666666; font-size: 12px;">&copy; 2023 Alfred. Todos los derechos reservados.</p>
+            </td>
+        </tr>
+    </table>`,
+          },
+        ),
+      }),
+    );
   }
 }

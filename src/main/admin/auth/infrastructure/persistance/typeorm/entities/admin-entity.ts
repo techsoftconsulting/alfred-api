@@ -34,6 +34,11 @@ export default class AdminEntity {
   })
   status?: string;
 
+  @Column({
+    nullable: true,
+  })
+  passwordResetToken?: string;
+
   constructor(props: Partial<AdminEntity>) {
     Object.assign(this, { ...props });
   }

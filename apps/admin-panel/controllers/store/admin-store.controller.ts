@@ -31,52 +31,56 @@ import Collection from '@shared/domain/value-object/collection';
 import Order from '@shared/domain/criteria/order';
 import Filters from '@shared/domain/criteria/filters';
 import ListDto from '@apps/shared/dto/list-dto';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
+import AdminRestaurantManagerInfrastructureCommandRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/restaurants/admin-restaurant-manager-infrastructure-command-repository';
+import AdminVendorManagerInfrastructureCommandRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/vendors/admin-vendor-manager-infrastructure-command-repository';
 
 class AdminStoreDto {
   /*  @ApiProperty()
-      id: string;
-    
-      @ApiProperty()
-      name: string;
-    
-      @ApiProperty()
-      categoriesIds: string[];
-    
-      @ApiProperty()
-      description: string;
-    
-      @ApiProperty()
-      logoUrl?: string;
-    
-      @ApiProperty()
-      coverImageUrl?: string;
-    
-      @ApiProperty()
-      slug: string;
-    
-      @ApiProperty()
-      schedule: any;
-    
-      @ApiProperty()
-      address: string;
-    
-      @ApiProperty()
-      contactPhone: string;
-    
-      @ApiProperty()
-      status: string;
-    
-      @ApiProperty()
-      createdAt: string;
-    
-      @ApiProperty()
-      recommended: boolean;
-    
-      @ApiProperty()
-      available: boolean;
-    
-      @ApiProperty()
-      type: string;*/
+                                  id: string;
+                                
+                                  @ApiProperty()
+                                  name: string;
+                                
+                                  @ApiProperty()
+                                  categoriesIds: string[];
+                                
+                                  @ApiProperty()
+                                  description: string;
+                                
+                                  @ApiProperty()
+                                  logoUrl?: string;
+                                
+                                  @ApiProperty()
+                                  coverImageUrl?: string;
+                                
+                                  @ApiProperty()
+                                  slug: string;
+                                
+                                  @ApiProperty()
+                                  schedule: any;
+                                
+                                  @ApiProperty()
+                                  address: string;
+                                
+                                  @ApiProperty()
+                                  contactPhone: string;
+                                
+                                  @ApiProperty()
+                                  status: string;
+                                
+                                  @ApiProperty()
+                                  createdAt: string;
+                                
+                                  @ApiProperty()
+                                  recommended: boolean;
+                                
+                                  @ApiProperty()
+                                  available: boolean;
+                                
+                                  @ApiProperty()
+                                  type: string;*/
 }
 
 class AdminGuardSlugRestaurantDto {
@@ -103,6 +107,14 @@ export class AdminStoreController extends ApiController {
     private repo: AdminRestaurantInfrastructureCommandRepository,
     @inject('multipart.handler')
     multipartHandler: MultipartHandler<Request, Response>,
+    @inject('AdminRestaurantManagerRepository')
+    private restaurantUserRepo: AdminRestaurantManagerInfrastructureCommandRepository,
+    @inject('AdminVendorManagerRepository')
+    private vendorUseRrepo: AdminVendorManagerInfrastructureCommandRepository,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }

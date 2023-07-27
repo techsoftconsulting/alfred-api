@@ -80,16 +80,36 @@ export default class RestaurantInfrastructureCommandRepository
       }),
     );
 
-    const dayHours = availabilityPerDay.reduce((acc, availability) => {
-      const dateName = DateTimeUtils.format(
-        availability.date,
-        'dddd',
-      ).toUpperCase();
+    const step1 = availabilityPerDay.flatMap((day) => {
+      const dateName = DateTimeUtils.format(day.date, 'dddd').toUpperCase();
 
-      return { ...acc, [dateName]: availability.slots };
+      return day.slots.map((s: any) => {
+        return {
+          ...s,
+          availableSlots: s.availableSlots.map((t) => {
+            return {
+              ...t,
+              date: day.date,
+              dateName: dateName,
+            };
+          }),
+        };
+      });
+    });
+
+    const step2 = step1.reduce((acc, t) => {
+      return {
+        ...acc,
+        [t.id]: {
+          ...t,
+          availableSlots: [
+            ...(acc[t.id]?.availableSlots ?? []),
+            ...t.availableSlots,
+          ],
+        },
+      };
     }, {});
-
-    return dayHours;
+    return Object.values(step2);
   }
 
   async getDayAvailability(id: string, date: string): Promise<any> {

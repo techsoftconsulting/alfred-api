@@ -10,4 +10,6 @@ export default interface CustomerAccountsRepository {
   findByEmail(email: string): Promise<any | null>;
 
   findAll(criteria: Criteria): Promise<any[]>;
+
+  findByResetPasswordToken(token: string): Promise<any | null>;
 }
