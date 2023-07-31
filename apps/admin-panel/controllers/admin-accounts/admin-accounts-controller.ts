@@ -36,6 +36,9 @@ import Collection from '@shared/domain/value-object/collection';
 import ApiController from '@shared/infrastructure/controller/api-controller';
 import AdminRoleCommandInfrastructureRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/admin-role-infrastructure-command-repository';
 import ListDto from '@apps/shared/dto/list-dto';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
+import { sendAdminWelcomeEmail } from '@apps/mobile/utils/emailUtils';
 
 class AdminDto {
   @ApiProperty()
@@ -74,6 +77,10 @@ export class AdminAccountsController extends ApiController {
     multipartHandler: MultipartHandler<Request, Response>,
     @inject('utils.passwordHasher')
     private passwordHasher: PasswordHasher,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -108,10 +115,10 @@ export class AdminAccountsController extends ApiController {
             filters: Filters.fromArray([
               ...where,
               /* {
-                                                                                                                                                                                                                                                                           field: 'id',
-                                                                                                                                                                                                                                                                           operator: '!=',
-                                                                                                                                                                                                                                                                           value: user.id,
-                                                                                                                                                                                                                                                                         },*/
+                                                                                                                                                                                                                                                                                                                                                           field: 'id',
+                                                                                                                                                                                                                                                                                                                                                           operator: '!=',
+                                                                                                                                                                                                                                                                                                                                                           value: user.id,
+                                                                                                                                                                                                                                                                                                                                                         },*/
             ]),
           })
         : undefined;
@@ -225,6 +232,18 @@ export class AdminAccountsController extends ApiController {
           },
         }),
       );
+
+      try {
+        await sendAdminWelcomeEmail(
+          {
+            user: { ...data, password: (data as any).credentials.password },
+          },
+          this.mailer,
+          this.emailContentParser,
+        );
+      } catch (e) {
+        console.log(e);
+      }
 
       return { ...newEntity, id: id.value };
     } catch (error) {

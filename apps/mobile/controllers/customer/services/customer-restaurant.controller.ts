@@ -4,14 +4,8 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import CommandBus from '@shared/domain/bus/command/command-bus';
 import QueryBus from '@shared/domain/bus/query/query-bus';
 import { inject } from '@shared/domain/decorators';
@@ -22,7 +16,6 @@ import RestaurantAreaInfrastructureCommandRepository from '@restaurants/auth/inf
 import Criteria from '@shared/domain/criteria/criteria';
 import Filters from '@shared/domain/criteria/filters';
 import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
 
 /*const RestaurantScheduleObject: SchemaObject = {
   type: "object",
@@ -103,8 +96,8 @@ const RestaurantObject: SchemaObject = {
 };
 
 @ApiTags('Customer')
-@ApiBearerAuth()
-@UseGuards(JwtUserGuard)
+/*@ApiBearerAuth()
+@UseGuards(JwtUserGuard)*/
 @Controller({
   path: 'customer/restaurant',
 })

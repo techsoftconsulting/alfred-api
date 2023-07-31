@@ -144,4 +144,39 @@ export class AdminAuthOptionsController extends ApiController {
       );
     }
   }
+
+  /*
+      @Get('/test-email')
+      @ApiResponse({
+        status: 200,
+        description: 'test email',
+      })
+      @ApiOperation({
+        summary: 'test email',
+      })
+      async testEmail() {
+        try {
+          await this.mailer.send(
+            new EmailMessage({
+              to: {
+                email: 'javieralej9401@gmail.com',
+                name: 'Javier',
+              },
+              subject: 'Alfred',
+              content: 'Testing email',
+            }),
+          );
+          return {
+            ok: true,
+          };
+        } catch (e) {
+          throw new HttpException(
+            {
+              status: HttpStatus.INTERNAL_SERVER_ERROR,
+              error: e.message,
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }*/
 }

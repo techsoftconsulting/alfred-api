@@ -123,10 +123,11 @@ export default class RestaurantReservationUtils {
   getNextHours(startHour, endHour, duration) {
     const finalReservDuration = duration.hours + duration.minutes / 60;
 
-    const range = Math.floor(
-      Math.floor(DateTimeUtils.differenceInHours(endHour, startHour)) /
-        finalReservDuration,
-    );
+    const range =
+      Math.floor(
+        Math.floor(DateTimeUtils.differenceInHours(endHour, startHour)) /
+          finalReservDuration,
+      ) - 1;
 
     let currItem = {
       start: startHour,
@@ -163,46 +164,46 @@ export default class RestaurantReservationUtils {
   }
 
   /*
-                              async getDayAvailability(id, date) {
-                                const tables = await this.findRestaurantTables(id);
-                                const dateName = DateTimeUtils.format(date, 'dddd').toUpperCase();
-                                const dayAvailableTables = tables.filter(
-                                  (t) => !!t.schedule[dateName]?.active,
-                                );
-                            
-                                const isToday =
-                                  DateTimeUtils.format(date, 'YYYY-MM-DD') ==
-                                  DateTimeUtils.format(new Date(), 'YYYY-MM-DD');
-                            
-                                const dayBusyTablesSlots = await this.findBusyTableRangeSlots(
-                                  id,
-                                  DateTimeUtils.format(date, 'YYYY-MM-DD'),
-                                );
-                            
-                                const dayAvailableHourRanges = this.getDayAvailableHourRanges(
-                                  dayAvailableTables,
-                                  dateName,
-                                );
-                            
-                                const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
-                                  const rangeSlots = this.getRangeSlots(isToday, current)
-                                    .map((z) => {
-                                      return DateTimeUtils.format(z, 'HH:mm');
-                                    })
-                                    .filter((s) => {
-                                      /!*All tables are taken for that hour *!/
-                                      const isFull =
-                                        dayBusyTablesSlots.filter((bs) => bs.formattedHour === s).length ===
-                                        dayAvailableTables.length;
-                            
-                                      return !isFull;
-                                    });
-                            
-                                  return [...acc, ...rangeSlots];
-                                }, []);
-                            
-                                return finalSlots;
-                              }*/
+                                          async getDayAvailability(id, date) {
+                                            const tables = await this.findRestaurantTables(id);
+                                            const dateName = DateTimeUtils.format(date, 'dddd').toUpperCase();
+                                            const dayAvailableTables = tables.filter(
+                                              (t) => !!t.schedule[dateName]?.active,
+                                            );
+                                        
+                                            const isToday =
+                                              DateTimeUtils.format(date, 'YYYY-MM-DD') ==
+                                              DateTimeUtils.format(new Date(), 'YYYY-MM-DD');
+                                        
+                                            const dayBusyTablesSlots = await this.findBusyTableRangeSlots(
+                                              id,
+                                              DateTimeUtils.format(date, 'YYYY-MM-DD'),
+                                            );
+                                        
+                                            const dayAvailableHourRanges = this.getDayAvailableHourRanges(
+                                              dayAvailableTables,
+                                              dateName,
+                                            );
+                                        
+                                            const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
+                                              const rangeSlots = this.getRangeSlots(isToday, current)
+                                                .map((z) => {
+                                                  return DateTimeUtils.format(z, 'HH:mm');
+                                                })
+                                                .filter((s) => {
+                                                  /!*All tables are taken for that hour *!/
+                                                  const isFull =
+                                                    dayBusyTablesSlots.filter((bs) => bs.formattedHour === s).length ===
+                                                    dayAvailableTables.length;
+                                        
+                                                  return !isFull;
+                                                });
+                                        
+                                              return [...acc, ...rangeSlots];
+                                            }, []);
+                                        
+                                            return finalSlots;
+                                          }*/
 
   async getDayAvailability2(id, date) {
     const tables = await this.findRestaurantTables(id);
@@ -226,7 +227,6 @@ export default class RestaurantReservationUtils {
       dateName,
       false,
     );
-
     const finalSlots = dayAvailableHourRanges.reduce((acc, current) => {
       const rangeSlots = this.getRangeSlots(isToday, current)
         .map((z) => {

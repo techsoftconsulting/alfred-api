@@ -20,7 +20,10 @@ import {
 } from 'lodash';
 import { AnyObject } from '../types';
 
-const moment = require('moment');
+const moment = require('moment-timezone');
+
+moment.tz.setDefault('America/Mexico_City');
+
 export namespace ObjectUtils {
   export const omit = fnOmit;
   export const omitUnknown = (object: AnyObject) => {

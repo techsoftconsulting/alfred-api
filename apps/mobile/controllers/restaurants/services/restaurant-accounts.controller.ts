@@ -31,6 +31,10 @@ import Order from '@shared/domain/criteria/order';
 import Filters from '@shared/domain/criteria/filters';
 import PasswordHasher from '@shared/domain/utils/password-hasher';
 import ListDto from '@apps/shared/dto/list-dto';
+import { sendStoreWelcomeEmail } from '@apps/mobile/utils/emailUtils';
+import EmailSender from '@shared/domain/email/email-sender';
+import EmailContentParser from '@shared/domain/email/email-content-parser';
+import AdminRestaurantInfrastructureCommandRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/restaurants/admin-restaurant-infrastructure-command-repository';
 
 class RestaurantAccountDto {}
 
@@ -48,10 +52,16 @@ export class RestaurantAccountsController extends ApiController {
     queryBus: QueryBus,
     @inject('RestaurantAccountsRepository')
     private repo: RestaurantAccountsInfrastructureCommandRepository,
+    @inject('AdminRestaurantRepository')
+    private storeRepo: AdminRestaurantInfrastructureCommandRepository,
     @inject('multipart.handler')
     multipartHandler: MultipartHandler<Request, Response>,
     @inject('utils.passwordHasher')
     private passwordHasher: PasswordHasher,
+    @inject('services.email')
+    private mailer: EmailSender,
+    @inject('email.content.parser')
+    private emailContentParser: EmailContentParser,
   ) {
     super(commandBus, queryBus, multipartHandler);
   }
@@ -179,6 +189,22 @@ export class RestaurantAccountsController extends ApiController {
         ...data,
         ...(hashedPassword ? { password: hashedPassword } : {}),
       });
+
+      if (!exists && (data as any).credentials) {
+        try {
+          await sendStoreWelcomeEmail(
+            {
+              user: { ...data, password: (data as any).credentials.password },
+              storeId: (data as any).restaurantId,
+            },
+            this.storeRepo,
+            this.mailer,
+            this.emailContentParser,
+          );
+        } catch (e) {
+          console.log(e);
+        }
+      }
 
       return { ok: true };
     } catch (error) {

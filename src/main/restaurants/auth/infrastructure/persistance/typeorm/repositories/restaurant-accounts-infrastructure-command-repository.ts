@@ -49,6 +49,7 @@ export default class RestaurantAccountsInfrastructureCommandRepository
     const entity = await this.repository().findOne({
       where: {
         email: email,
+        status: 'ACTIVE',
       },
     });
     return entity || null;
