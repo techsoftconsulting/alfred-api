@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiOperation,
   ApiProperty,
   ApiResponse,
@@ -40,7 +38,6 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 import EmailMessage from '@shared/domain/email/email-message';
-import { JwtUserGuard } from '@apps/shared/infrastructure/authentication/guards/jwt-user-guard';
 
 const QRCode = require('qrcode');
 
@@ -69,12 +66,12 @@ class ReservationListDto {
   'where'?: string;
 }
 
-class CustomerReservationDto {
+class ReservationCustomerDto {
   @ApiProperty()
-  restaurantId: string;
+  firstName: string;
 
   @ApiProperty()
-  tableId: string;
+  lastName: string;
 
   @ApiProperty({
     required: false,
@@ -85,6 +82,33 @@ class CustomerReservationDto {
     required: false,
   })
   phone?: string;
+}
+
+class CustomerReservationDto {
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  phone?: string;
+
+  @ApiProperty()
+  restaurantId: string;
+
+  @ApiProperty()
+  tableId: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  allergies?: string;
 
   @ApiProperty({
     description: 'Formato 24 hrs. Ejemplo: 18:00',
@@ -187,8 +211,6 @@ const ReservationObject: SchemaObject = {
 };
 
 @ApiTags('Customer')
-@ApiBearerAuth()
-@UseGuards(JwtUserGuard)
 @Controller({
   path: 'customer/reservation',
 })
@@ -306,14 +328,11 @@ export class RestaurantReservationController extends ApiController {
   @ApiOperation({
     summary: 'Crear reservacion',
   })
-  async create(
-    @User() user: AuthenticatedUser,
-    @Body() data: CustomerReservationDto,
-  ): Promise<any> {
+  async create(@Body() data: CustomerReservationDto): Promise<any> {
     try {
-      const { mall, client, table, restaurant } =
-        await this.findReservationInfo(user.id, data);
+      const { mall, table, restaurant } = await this.findReservationInfo(data);
       const id = new Id().value;
+
       await this.repo.createReservation({
         ...ObjectUtils.omit(data, ['phone', 'allergies']),
         id: id,
@@ -340,12 +359,12 @@ export class RestaurantReservationController extends ApiController {
           logoUrl: restaurant.logoUrl,
         },
         client: {
-          id: client.id,
-          firstName: client.firstName,
-          lastName: client.firstName,
-          allergies: data.allergies ?? client.allergies,
-          phone: data.phone ?? client.phone,
-          email: client.email,
+          /* id: data.id,*/
+          firstName: data.firstName,
+          lastName: data.lastName,
+          allergies: data.allergies,
+          phone: data.phone,
+          email: data.email,
         },
         status: 'ACTIVE',
       });
@@ -355,7 +374,7 @@ export class RestaurantReservationController extends ApiController {
       await sendReservation(
         this.mailer,
         this.emailContentParser,
-        { firstName: client.firstName, email: client.email },
+        { firstName: data.firstName, email: data.email },
         { id: id },
       );
       return entity;
@@ -380,13 +399,11 @@ export class RestaurantReservationController extends ApiController {
     summary: 'Actualizar reservacion',
   })
   async update(
-    @User() user: AuthenticatedUser,
     @Body() data: CustomerReservationDto,
     @Param('id') id: string,
   ): Promise<any> {
     try {
-      const { mall, client, table, restaurant } =
-        await this.findReservationInfo(user.id, data);
+      const { mall, table, restaurant } = await this.findReservationInfo(data);
       await this.repo.updateReservation({
         id,
         ...ObjectUtils.omit(data, ['phone', 'allergies']),
@@ -412,12 +429,11 @@ export class RestaurantReservationController extends ApiController {
           logoUrl: restaurant.logoUrl,
         },
         client: {
-          id: client.id,
-          firstName: client.firstName,
-          lastName: client.firstName,
-          allergies: data.allergies ?? client.allergies,
-          phone: data.phone ?? client.phone,
-          email: client.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          allergies: data.allergies,
+          phone: data.phone,
+          email: data.email,
         },
       });
 
@@ -434,7 +450,7 @@ export class RestaurantReservationController extends ApiController {
     }
   }
 
-  @Patch(':id/cancel')
+  @Post(':id/cancel')
   @ApiResponse({
     status: 200,
     schema: ReservationObject,
@@ -466,31 +482,28 @@ export class RestaurantReservationController extends ApiController {
     }
   }
 
-  private async findReservationInfo(
-    clientId: string,
-    reservation: CustomerReservationDto,
-  ) {
+  private async findReservationInfo(reservation: CustomerReservationDto) {
     const restaurant = await this.restaurantRepo.getProfileById(
       reservation.restaurantId,
     );
 
     const mall = await this.mallRepo.find(restaurant.address);
 
-    const client = await this.userFinder.find(clientId);
+    //  const client = await this.userFinder.find(clientId);
 
     const table = await this.areaRepo.findTable(
       reservation.restaurantId,
       reservation.tableId,
     );
 
-    if (!restaurant || !mall || !client || !table) {
+    if (!restaurant || !mall || /* !client ||*/ !table) {
       throw new Error('SOME_RESOURCES_NOT_FOUND');
     }
 
     return {
       restaurant,
       mall,
-      client,
+      //   client,
       table,
     };
   }
@@ -523,25 +536,25 @@ export async function sendReservation(
         content: await emailContentParser.parseFromFile(
           'general/reservation-email.ejs',
           {
-            content: `<table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+            content: `<table align='center' border='0' cellpadding='0' cellspacing='0' width='600'>
 
         <tr>
-            <td bgcolor="#ffffff" style="padding: 40px 30px;">
-                <h1 style="color: #333333;">Confirmación de Reservación</h1>
-                <p style="color: #333333;">¡Hola ${user.firstName}!</p>
-                <p style="color: #333333;">Gracias por reservar con nosotros. Aquí está tu código QR de confirmación:</p>
-                <div style="text-align: center;">
+            <td bgcolor='#ffffff' style='padding: 40px 30px;'>
+                <h1 style='color: #333333;'>Confirmación de Reservación</h1>
+                <p style='color: #333333;'>¡Hola ${user.firstName}!</p>
+                <p style='color: #333333;'>Gracias por reservar con nosotros. Aquí está tu código QR de confirmación:</p>
+                <div style='text-align: center;'>
                     <!-- Aquí debes proporcionar la URL o el enlace de tu imagen del código QR -->
-                    <img src="cid:qr" alt="Código QR de la Reservación" width="200">
+                    <img src='cid:qr' alt='Código QR de la Reservación' width='200'>
                 </div>
-                <p style="color: #333333;">Presenta este código QR al momento de tu llegada.</p>
-                <p style="color: #333333;">¡Esperamos verte pronto!</p>
+                <p style='color: #333333;'>Presenta este código QR al momento de tu llegada.</p>
+                <p style='color: #333333;'>¡Esperamos verte pronto!</p>
             </td>
         </tr>
         <tr>
-            <td bgcolor="#f0f0f0" style="padding: 30px; text-align: center;">
-                <p style="color: #666666; font-size: 12px;">Este correo electrónico es solo para fines de confirmación. Si tienes alguna pregunta o inquietud, por favor contáctanos.</p>
-                <p style="color: #666666; font-size: 12px;">&copy; 2023 Alfred. Todos los derechos reservados.</p>
+            <td bgcolor='#f0f0f0' style='padding: 30px; text-align: center;'>
+                <p style='color: #666666; font-size: 12px;'>Este correo electrónico es solo para fines de confirmación. Si tienes alguna pregunta o inquietud, por favor contáctanos.</p>
+                <p style='color: #666666; font-size: 12px;'>&copy; 2023 Alfred. Todos los derechos reservados.</p>
             </td>
         </tr>
     </table>`,
