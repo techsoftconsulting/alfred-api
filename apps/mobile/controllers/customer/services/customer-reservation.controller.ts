@@ -124,6 +124,43 @@ class CustomerReservationDto {
   numberOfPeople: number;
 }
 
+class CustomerEditReservationDto {
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  phone?: string;
+
+  @ApiProperty()
+  tableId: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  allergies?: string;
+
+  @ApiProperty({
+    description: 'Formato 24 hrs. Ejemplo: 18:00',
+  })
+  hour: string;
+
+  @ApiProperty({
+    description: 'Formato YYYY-MM-DD. Ejemplo: 2023-10-17',
+  })
+  date: string;
+
+  @ApiProperty()
+  numberOfPeople: number;
+}
+
 const ReservationObject: SchemaObject = {
   type: 'object',
   properties: {
@@ -250,10 +287,7 @@ export class RestaurantReservationController extends ApiController {
   @ApiOperation({
     summary: 'Lista de reservaciones',
   })
-  async list(
-    @User() user: AuthenticatedUser,
-    @Query() params: ReservationListDto,
-  ): Promise<any> {
+  async list(@Query() params: ReservationListDto): Promise<any> {
     try {
       const order = params['order'] ? JSON.parse(params['order']) : undefined;
       const limit = params['limit'];
@@ -270,11 +304,6 @@ export class RestaurantReservationController extends ApiController {
             filters: Filters.fromArray([
               ...(where ?? []),
               ...[
-                {
-                  field: 'clientId',
-                  operator: '==',
-                  value: user.id,
-                },
                 {
                   field: 'status',
                   operator: '==',
@@ -403,7 +432,26 @@ export class RestaurantReservationController extends ApiController {
     @Param('id') id: string,
   ): Promise<any> {
     try {
-      const { mall, table, restaurant } = await this.findReservationInfo(data);
+      const reservation = await this.repo.getReservation(id);
+      if (!reservation) {
+        throw new Error('not_found');
+      }
+
+      const restaurantId = data.restaurantId ?? reservation.restaurantId;
+
+      const restaurant = await this.restaurantRepo.getProfileById(restaurantId);
+
+      if (!restaurant) {
+        throw new Error('restaurant_not_found');
+      }
+
+      const mall = await this.mallRepo.find(restaurant.address);
+
+      const table = await this.areaRepo.findTable(
+        restaurantId,
+        data.tableId ?? reservation.table?.id,
+      );
+
       await this.repo.updateReservation({
         id,
         ...ObjectUtils.omit(data, ['phone', 'allergies']),
@@ -415,28 +463,34 @@ export class RestaurantReservationController extends ApiController {
           'UTC',
         ),
         table: {
-          id: table.id,
-          name: `Mesa ${table.number}`,
-          areaId: table.areaId,
+          ...reservation.table,
+          ...ObjectUtils.omitUnknown({
+            id: table?.id,
+            name: `Mesa ${table?.number}`,
+            areaId: table?.areaId,
+          }),
         },
         mall: {
           id: mall.id,
           name: mall.name,
         },
+        restaurantId: restaurant.id,
         restaurant: {
           id: restaurant.id,
           name: restaurant.name,
           logoUrl: restaurant.logoUrl,
         },
         client: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          allergies: data.allergies,
-          phone: data.phone,
-          email: data.email,
+          ...reservation.client,
+          ...ObjectUtils.omitUnknown({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            allergies: data.allergies,
+            phone: data.phone,
+            email: data.email,
+          }),
         },
       });
-
       const entity = await this.repo.getReservation(id);
       return entity;
     } catch (error) {
