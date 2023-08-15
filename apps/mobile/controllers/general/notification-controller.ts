@@ -52,8 +52,8 @@ class SendEmailDto {
       type: 'object',
       properties: {
         /*   filename: {
-                                                                                                                                                                                                                                                                                                                                                                             type: 'string',
-                                                                                                                                                                                                                                                                                                                                                                           },*/
+                                                                                                                                                                                                                                                                                                                                                                                                     type: 'string',
+                                                                                                                                                                                                                                                                                                                                                                                                   },*/
         path: {
           type: 'string',
         },
@@ -164,6 +164,10 @@ export class NotificationController extends ApiController {
     summary: '',
   })
   async sendWhatsapp(@Body() data: SendWhatsAppDto): Promise<any> {
+    console.log({
+      type: 'body',
+      parameters: data.templateParams,
+    });
     try {
       const res = await fetchJson(
         `https://graph.facebook.com/v17.0/${process.env.WHATSAPP_ID}/messages`,
@@ -175,13 +179,18 @@ export class NotificationController extends ApiController {
             recipient_type: 'individual',
             to: data.to.phone,
             type: 'template',
-            template: { name: data.templateId, language: { code: 'es_MX' } },
-            components: [
-              {
-                type: 'body',
-                parameters: data.templateParams,
-              },
-            ],
+            template: {
+              name: data.templateId,
+              language: { code: 'es_MX' },
+              ...(data.templateParams && {
+                components: [
+                  {
+                    type: 'body',
+                    parameters: data.templateParams,
+                  },
+                ],
+              }),
+            },
           }),
         },
       );
