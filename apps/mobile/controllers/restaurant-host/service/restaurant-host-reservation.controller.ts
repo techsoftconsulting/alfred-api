@@ -37,7 +37,10 @@ import RestaurantInfrastructureCommandRepository from '@restaurants/auth/infrast
 import RestaurantAreaInfrastructureCommandRepository from '@restaurants/auth/infrastructure/persistance/typeorm/repositories/restaurant-area-infrastructure-command-repository';
 import SimpleCodeGenerator from '@shared/infrastructure/utils/simple-code-generator';
 import ListDto from '@apps/shared/dto/list-dto';
-import { sendReservation } from '@apps/mobile/controllers/customer/services/customer-reservation.controller';
+import {
+  sendReservation,
+  sendWhatsapp,
+} from '@apps/mobile/controllers/customer/services/customer-reservation.controller';
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 
@@ -202,9 +205,11 @@ export class RestaurantHostReservationController extends ApiController {
     @Body() data: HostReservationDto,
   ): Promise<any> {
     try {
-      await this.repo.createReservation(data);
+      const newReserv = await this.repo.createReservation(data);
 
       if ((data as any).client) {
+        await sendWhatsapp(newReserv);
+
         await sendReservation(
           this.mailer,
           this.emailContentParser,

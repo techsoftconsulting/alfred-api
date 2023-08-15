@@ -52,8 +52,8 @@ class SendEmailDto {
       type: 'object',
       properties: {
         /*   filename: {
-                                                                                                                                                                                                                                                                                                                                                                                                     type: 'string',
-                                                                                                                                                                                                                                                                                                                                                                                                   },*/
+                                                                                                                                                                                                                                                                                                                                                                                                             type: 'string',
+                                                                                                                                                                                                                                                                                                                                                                                                           },*/
         path: {
           type: 'string',
         },
@@ -164,10 +164,6 @@ export class NotificationController extends ApiController {
     summary: '',
   })
   async sendWhatsapp(@Body() data: SendWhatsAppDto): Promise<any> {
-    console.log({
-      type: 'body',
-      parameters: data.templateParams,
-    });
     try {
       const res = await fetchJson(
         `https://graph.facebook.com/v17.0/${process.env.WHATSAPP_ID}/messages`,

@@ -38,6 +38,8 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 import EmailMessage from '@shared/domain/email/email-message';
+import { fetchJson } from '@apps/mobile/utils/fetch/fetch';
+import { ReservationEntity } from '@restaurants/auth/infrastructure/persistance/typeorm/entities/reservation-entity';
 
 const QRCode = require('qrcode');
 
@@ -400,12 +402,15 @@ export class RestaurantReservationController extends ApiController {
 
       const entity = await this.repo.getReservation(id);
 
+      await sendWhatsapp(entity);
+
       await sendReservation(
         this.mailer,
         this.emailContentParser,
         { firstName: data.firstName, email: data.email },
         { id: id },
       );
+
       return entity;
     } catch (error) {
       console.log(error);
@@ -560,6 +565,70 @@ export class RestaurantReservationController extends ApiController {
       //   client,
       table,
     };
+  }
+}
+
+export async function sendWhatsapp(entity: ReservationEntity) {
+  try {
+    if (!entity.client.phone) {
+      console.log('No phone set');
+      return;
+    }
+
+    const clientPhone = entity.client.phone;
+
+    console.log('sending whatsapp to ' + clientPhone);
+
+    const clientName = !entity.client.firstName
+      ? ''
+      : `${entity.client.firstName ?? ''} ${entity.client.lastName ?? ''}`;
+
+    const res = await fetchJson(
+      `https://graph.facebook.com/v17.0/${process.env.WHATSAPP_ID}/messages`,
+      {
+        method: 'POST',
+        token: process.env.WHATSAPP_KEY,
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: clientPhone,
+          type: 'template',
+          template: {
+            name: 'confirmacion_reservaciones',
+            language: { code: 'es_MX' },
+            components: [
+              {
+                type: 'body',
+                parameters: [
+                  {
+                    type: 'text',
+                    text: clientName,
+                  },
+                  {
+                    type: 'text',
+                    text: entity.restaurant.name,
+                  },
+                  {
+                    type: 'text',
+                    text: entity.date,
+                  },
+                  {
+                    type: 'text',
+                    text: entity.hour,
+                  },
+                  {
+                    type: 'text',
+                    text: entity.numberOfPeople,
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      },
+    );
+  } catch (e) {
+    console.log(e);
   }
 }
 
