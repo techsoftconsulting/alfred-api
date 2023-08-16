@@ -38,7 +38,7 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 import EmailMessage from '@shared/domain/email/email-message';
-import { fetchJson } from '@apps/mobile/utils/fetch/fetch';
+import { fetchJson } from '@apps/alfred/utils/fetch/fetch';
 import { ReservationEntity } from '@restaurants/auth/infrastructure/persistance/typeorm/entities/reservation-entity';
 
 const QRCode = require('qrcode');

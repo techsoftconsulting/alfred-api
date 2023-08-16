@@ -40,7 +40,7 @@ import ListDto from '@apps/shared/dto/list-dto';
 import {
   sendReservation,
   sendWhatsapp,
-} from '@apps/mobile/controllers/customer/services/customer-reservation.controller';
+} from '@apps/alfred/controllers/customer/services/customer-reservation.controller';
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 

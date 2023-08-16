@@ -34,7 +34,7 @@ import ListDto from '@apps/shared/dto/list-dto';
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
 import AdminRestaurantInfrastructureCommandRepository from '@admin/auth/infrastructure/persistance/typeorm/repositories/restaurants/admin-restaurant-infrastructure-command-repository';
-import { sendStoreWelcomeEmail } from '@apps/mobile/utils/emailUtils';
+import { sendStoreWelcomeEmail } from '@apps/alfred/utils/emailUtils';
 
 class VendorAccountDto {}
 

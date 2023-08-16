@@ -1,5 +1,5 @@
 import fetch, { Headers } from 'node-fetch';
-import HttpError from '@apps/mobile/utils/fetch/HttpError';
+import HttpError from '@apps/alfred/utils/fetch/HttpError';
 
 export interface Options extends RequestInit {
   token?: string;

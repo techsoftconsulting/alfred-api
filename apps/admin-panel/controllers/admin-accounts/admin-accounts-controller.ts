@@ -38,7 +38,7 @@ import AdminRoleCommandInfrastructureRepository from '@admin/auth/infrastructure
 import ListDto from '@apps/shared/dto/list-dto';
 import EmailSender from '@shared/domain/email/email-sender';
 import EmailContentParser from '@shared/domain/email/email-content-parser';
-import { sendAdminWelcomeEmail } from '@apps/mobile/utils/emailUtils';
+import { sendAdminWelcomeEmail } from '@apps/alfred/utils/emailUtils';
 
 class AdminDto {
   @ApiProperty()
@@ -115,10 +115,10 @@ export class AdminAccountsController extends ApiController {
             filters: Filters.fromArray([
               ...where,
               /* {
-                                                                                                                                                                                                                                                                                                                                                           field: 'id',
-                                                                                                                                                                                                                                                                                                                                                           operator: '!=',
-                                                                                                                                                                                                                                                                                                                                                           value: user.id,
-                                                                                                                                                                                                                                                                                                                                                         },*/
+                                                                                                                                                                                                                                                                                                                                                                     field: 'id',
+                                                                                                                                                                                                                                                                                                                                                                     operator: '!=',
+                                                                                                                                                                                                                                                                                                                                                                     value: user.id,
+                                                                                                                                                                                                                                                                                                                                                                   },*/
             ]),
           })
         : undefined;
